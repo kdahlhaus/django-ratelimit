@@ -28,6 +28,13 @@ sensible defaults (in *italics*).
     Which HTTP field(s) to use to rate-limit. May be a string or a list. *none*
 ``rate``:
     The number of requests per unit time allowed. *5/m*
+``error_message``:
+    Optional error message passed to the 403 exception.  This will be passed.
+
+
+
+``from ratelimit.decorators import clear`` can be called to reset the limiting for a given ip=True/False, field combination.  While it is in the decorator module, it is *not* a decorator.
+
 
 
 Examples
@@ -68,6 +75,18 @@ Examples
     def slow(request):
         # Allow 4 reqs/hour.
         return HttpResponse()
+
+    @ratelimit(field='username')
+    def login(request):
+        # If the same username OR IP is used >5 times/min, this will be True.
+        # The `username` value will come from GET or POST, determined by the
+        # request method.
+        was_limited = getattr(request, 'limited', False)
+
+        # if user logged in OK:
+        clear(field='username')
+
+        return HttpResponse() 
 
 
 Acknowledgements

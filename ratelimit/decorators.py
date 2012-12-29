@@ -34,9 +34,11 @@ def _split_rate(rate):
 
 
 _backend = CacheBackend()
+def clear(request, ip=True, field=None):
+    "reset counts for these parameters"
+    _backend.clear(request, ip, field)
 
-
-def ratelimit(ip=True, block=False, method=['POST'], field=None, rate='5/m'):
+def ratelimit(ip=True, block=False, method=['POST'], field=None, rate='5/m', error_message=None):
     def decorator(fn):
         count, period = _split_rate(rate)
 
@@ -47,7 +49,7 @@ def ratelimit(ip=True, block=False, method=['POST'], field=None, rate='5/m'):
                 _backend.count(request, ip, field, period)
                 if _backend.limit(request, ip, field, count):
                     if block:
-                        return HttpResponseForbidden()
+                        return HttpResponseForbidden() if error_message is None else HttpResponseForbidden(error_message)
                     request.limited = True
             return fn(request, *args, **kw)
         return _wrapped

@@ -34,3 +34,7 @@ class CacheBackend(BaseBackend):
     def limit(self, request, ip=True, field=None, count=5):
         counters = cache.get_many(self._keys(request, ip, field))
         return any((v > count) for v in counters.values())
+
+    def clear(self, request, ip=True, field=None):
+        cache.delete_many(self._keys(request, ip, field))
+
